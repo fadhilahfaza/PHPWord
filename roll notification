@@ -1,0 +1,39 @@
+require_once 'vendor/autoload.php';
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\IOFactory;
+
+// Ambil data dari form
+$nomor_booking = $_POST['nomor_booking'] ?? '';
+$initial_vessel = $_POST['initial_vessel'] ?? '';
+$current_vessel = $_POST['current_vessel'] ?? '';
+$nomor_bl = $_POST['nomor_bl'] ?? '';
+
+// Buat dokumen Word
+$phpWord = new PhpWord();
+$section = $phpWord->addSection();
+
+$section->addTitle("ROLL NOTIFICATION", 1);
+$section->addTextBreak(1);
+
+$section->addText("Nomor Booking: " . $nomor_booking);
+$section->addText("Initial Connecting Vessel: " . $initial_vessel);
+$section->addText("Current Connecting Vessel: " . $current_vessel);
+$section->addText("Nomor BL: " . $nomor_bl);
+$section->addTextBreak(2);
+$section->addText("Generated automatically on " . date("d F Y, H:i"));
+
+// Simpan sementara
+$fileName = "Roll_Notification_" . preg_replace('/\s+/', '_', $nomor_booking) . ".docx";
+$temp_file = tempnam(sys_get_temp_dir(), 'word');
+$objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+$objWriter->save($temp_file);
+
+// Unduh otomatis
+header("Content-Description: File Transfer");
+header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+header('Content-Disposition: attachment; filename="' . $fileName . '"');
+header('Content-Length: ' . filesize($temp_file));
+readfile($temp_file);
+unlink($temp_file);
+exit;
+?>
